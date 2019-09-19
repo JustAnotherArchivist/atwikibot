@@ -5,6 +5,8 @@ import os
 
 
 extractionPattern = re.compile('[^:/]+://(?:www\.)?([^/]+)')
+countMarkBegin = '<!-- atwikibot:urlCount -->'
+countMarkEnd = '<!-- /atwikibot:urlCount -->'
 
 
 def get_cleaned_domain(line):
@@ -27,6 +29,7 @@ def main():
 	entries.append((None, None)) # Dummy entry at the end to trigger a last sorting if necessary
 	output = []
 	currentBlock = []
+	urlCount = 0
 	while entries:
 		line, domain = entries.popleft()
 		if domain is None:
@@ -34,6 +37,7 @@ def main():
 			if currentBlock:
 				currentBlock.sort(key = lambda x: x[1])
 				output.extend(x[0] for x in currentBlock)
+				urlCount += len(currentBlock)
 				currentBlock = []
 			if line is not None: # Ignore the dummy entry
 				output.append(line)
@@ -42,6 +46,11 @@ def main():
 			currentBlock.append((line, domain))
 
 	outputStr = '\n'.join(output)
+	if countMarkBegin in outputStr and countMarkEnd in outputStr:
+		countMarkBeginPos = outputStr.index(countMarkBegin)
+		countMarkEndPos = outputStr.find(countMarkEnd, countMarkBeginPos) # End mark could be before begin mark
+		if countMarkEndPos != -1:
+			outputStr = outputStr[:countMarkBeginPos] + countMarkBegin + 'This list currently contains ' + str(urlCount) + ' URL' + ('s' if urlCount != 1 else '') + '.' + countMarkEnd + outputStr[countMarkEndPos + len(countMarkEnd):]
 
 	# Update if necessary
 	if page.text() != outputStr:
