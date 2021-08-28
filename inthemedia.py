@@ -3,7 +3,7 @@ import os
 
 
 def main():
-	site = mwclient.Site('archiveteam.org', path = '/')
+	site = mwclient.Site('wiki.archiveteam.org', path = '/')
 
 	# Retrieve full "In The Media" page
 	mediaPage = site.Pages['In The Media']

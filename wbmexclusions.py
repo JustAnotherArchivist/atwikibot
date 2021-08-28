@@ -18,7 +18,7 @@ def get_cleaned_domain(line):
 
 
 def main():
-	site = mwclient.Site('archiveteam.org', path = '/')
+	site = mwclient.Site('wiki.archiveteam.org', path = '/')
 
 	page = site.Pages['List of websites excluded from the Wayback Machine']
 

@@ -32,7 +32,7 @@ def maybe_edit_wiki(site, newList):
 
 
 def main():
-	site = mwclient.Site('archiveteam.org', path = '/')
+	site = mwclient.Site('wiki.archiveteam.org', path = '/')
 	maybe_edit_wiki(site, generate_page_list(site))
 
 

@@ -20,7 +20,7 @@ def default_project_to_wiki_text(project):
 
 # Update the wiki page if necessary
 def maybe_edit_wiki(pageText):
-	site = mwclient.Site('archiveteam.org', path = '/')
+	site = mwclient.Site('wiki.archiveteam.org', path = '/')
 	page = site.Pages['CurrentWarriorProject']
 	if page.text() != pageText:
 		site.login(os.environ['ATWIKIBOT_USERNAME'], os.environ['ATWIKIBOT_PASSWORD']) # Only log in when necessary
