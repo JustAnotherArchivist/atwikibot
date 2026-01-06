@@ -1,4 +1,5 @@
 from __future__ import annotations  # PEP 585 for Python 3.7 and 3.8
+import collections
 import logging
 import requests
 import time
@@ -86,7 +87,20 @@ def format_change(change: dict) -> typing.Optional[str]:
 	return f'{change["user"]} {verb} {title}{lenChangeAndComment}{url}'
 
 
+def format_bot_changes(username, changes):
+	# [-1] is the newest edit, increment its timestamp by one second for the URL
+	offset = ''.join(c for c in changes[-1]['timestamp'] if c in '0123456789') or '0'
+	offset = str(int(offset) + 1)
+	if len(offset) == 14:
+		url = f': https://wiki.archiveteam.org/index.php?title=Special:Contributions/{urllib.parse.quote_plus(username)}&offset={offset}&limit={len(changes)}'
+	else:
+		url = f' but I couldn\'t generate a link for them.'
+	return f'{username} made {len(changes)} bot changes{url}'
+
+
 def main():
+	botCounts = collections.Counter()
+	botChanges = collections.defaultdict(list)
 	# Get initial TS/rcid tuple
 	_, newestRc = get_new(None)
 	time.sleep(60)
@@ -97,15 +111,28 @@ def main():
 			logging.error('get_new failed', exc_info = e)
 			time.sleep(60)
 			continue
+		botCounts.update(change['user'] for change in changes if change.get('bot', None) is not None)
 		for change in changes:
 			if change['ns'] in (2, 3) and change['type'] != 'log':
 				logging.info(f'Skipping user namespace change: {change!r}')
 				continue
+			if change.get('bot', None) is not None and botCounts[change['user']] > 1:
+				logging.info(f'Collapsing bot change: {change!r}')
+				botChanges[change['user']].append(change)
+				continue
+			logging.info(f'Regular change: {change!r}')
 			formatted = format_change(change)
 			if formatted and not any(ord(c) < 32 for c in formatted):
+				logging.info(f'Formatted: {formatted!r}')
 				print(formatted, flush = True)
 			else:
 				logging.warning(f'Suppressed change because it was un- or ill-formatted: {change!r}')
+		for item in botChanges.items():
+			formatted = format_bot_changes(*item)
+			logging.info(f'Formatted (bot): {formatted!r}')
+			print(formatted, flush = True)
+		botCounts.clear()
+		botChanges.clear()
 		time.sleep(60)
 
 
