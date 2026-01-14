@@ -92,7 +92,7 @@ def format_bot_changes(username, changes):
 	offset = ''.join(c for c in changes[-1]['timestamp'] if c in '0123456789') or '0'
 	offset = str(int(offset) + 1)
 	if len(offset) == 14:
-		url = f': https://wiki.archiveteam.org/index.php?title=Special:Contributions/{urllib.parse.quote_plus(username)}&offset={offset}&limit={len(changes)}'
+		url = f': https://wiki.archiveteam.org/index.php?title=Special:Contributions/{urllib.parse.quote_plus(username)}&offset={offset}&limit={len(changes)}&namespace=2&wpfilters[]=nsInvert&wpfilters[]=associated'
 	else:
 		url = f' but I couldn\'t generate a link for them.'
 	return f'{username} made {len(changes)} bot changes{url}'
@@ -111,11 +111,18 @@ def main():
 			logging.error('get_new failed', exc_info = e)
 			time.sleep(60)
 			continue
-		botCounts.update(change['user'] for change in changes if change.get('bot', None) is not None)
+
+		# Filter User and User_talk namespace log entries (but not e.g. rights changes)
+		filtered = []
 		for change in changes:
 			if change['ns'] in (2, 3) and change['type'] != 'log':
 				logging.info(f'Skipping user namespace change: {change!r}')
 				continue
+			filtered.append(change)
+		changes = filtered
+
+		botCounts.update(change['user'] for change in changes if change.get('bot', None) is not None)
+		for change in changes:
 			if change.get('bot', None) is not None and botCounts[change['user']] > 1:
 				logging.info(f'Collapsing bot change: {change!r}')
 				botChanges[change['user']].append(change)
