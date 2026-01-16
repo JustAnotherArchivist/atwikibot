@@ -59,7 +59,7 @@ def format_change(change: dict) -> typing.Optional[str]:
 	url = None
 	if change['type'] == 'new':
 		verb = 'created'
-		url = f'https://wiki.archiveteam.org/?title={urllib.parse.quote(change["title"])}'
+		url = f'https://wiki.archiveteam.org/?oldid={change["revid"]}'
 		lenChange = True
 	elif change['type'] == 'edit':
 		verb = 'edited'
