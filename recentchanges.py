@@ -92,7 +92,7 @@ def format_bot_changes(username, changes):
 	offset = ''.join(c for c in changes[-1]['timestamp'] if c in '0123456789') or '0'
 	offset = str(int(offset) + 1)
 	if len(offset) == 14:
-		url = f': https://wiki.archiveteam.org/index.php?title=Special:Contributions/{urllib.parse.quote_plus(username)}&offset={offset}&limit={len(changes)}&namespace=2&wpfilters[]=nsInvert&wpfilters[]=associated'
+		url = f': https://wiki.archiveteam.org/index.php?title=Special:Contributions/{urllib.parse.quote_plus(username)}&offset={offset}&limit={len(changes)}&namespace=2&wpfilters%5B%5D=nsInvert&wpfilters%5B%5D=associated'
 	else:
 		url = f' but I couldn\'t generate a link for them.'
 	return f'{username} made {len(changes)} bot changes{url}'
